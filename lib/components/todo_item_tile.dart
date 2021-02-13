@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 
-class TodoItem extends StatelessWidget {
-  const TodoItem({
-    Key key,
-  }) : super(key: key);
-
+class TodoItemTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(

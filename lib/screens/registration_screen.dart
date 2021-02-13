@@ -68,7 +68,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               onPressed: () async {
                 // 2. ユーザー登録処理
                 // setState(() {
-                //   showSpinner = true;
+                //   showSpintiner = true;
                 // });
                 try {
                   print('registration process is called...');
