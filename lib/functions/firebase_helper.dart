@@ -1,4 +1,4 @@
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -25,7 +25,7 @@ class FirebaseHelper {
       // final user = await _auth.currentUser();
       if (user != null) {
         loggedInUser = user;
-        print(loggedInUser);
+        print(loggedInUser.email);
         return loggedInUser;
       }
     } catch (e) {
@@ -52,15 +52,21 @@ class FirebaseHelper {
   }
 
   // 4. Firestoreにデータを登録する処理
-  void addTodoItems({String todoItem}) async {
-    DateTime createdAt = DateTime(2021, 2, 13, 14, 10);
+  void addTodoItems(
+      {String todoItem,
+      DateTime todoDate,
+      int targetLevel,
+      User loggedInUser}) async {
+    // DateTime createdAt = DateTime(2021, 2, 13, 14, 10);
 
+    print('addTodoItems is called');
+    print('loggedInUser is $loggedInUser');
     _firestore.collection('stepTodos').add(
       {
         FirebaseDataMap.title: todoItem,
-        FirebaseDataMap.targetLevel: 0,
-        FirebaseDataMap.difficultyScore: 50,
-        FirebaseDataMap.targetDate: Timestamp.fromDate(createdAt),
+        FirebaseDataMap.targetLevel: targetLevel,
+        FirebaseDataMap.difficultyScore: 50, // TODO: diffcultyLevelも引数とる
+        FirebaseDataMap.targetDate: Timestamp.fromDate(todoDate),
         FirebaseDataMap.isDone: false,
         FirebaseDataMap.user: loggedInUser.email,
       },

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:step_todo/components/popup_dialog.dart';
 import 'package:step_todo/functions/firebase_helper.dart';
-import 'package:rflutter_alert/rflutter_alert.dart';
 
 class MainTimeLineScreen extends StatefulWidget {
   static String id = 'main_timeline_screen';
@@ -17,8 +16,9 @@ class _MainTimeLineScreenState extends State<MainTimeLineScreen> {
   // Stream todoItemSnapshot = FirebaseHelper().getTodoItemSnapshot();
   // final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  String todoItem;
   User loggedInUser;
+
+  String todoItem;
 
   @override
   void initState() {
@@ -36,26 +36,39 @@ class _MainTimeLineScreenState extends State<MainTimeLineScreen> {
       body: ListView(
         children: [
           Text('${loggedInUser.email}でログインしています'),
-          TextField(
-            onChanged: (value) {
-              todoItem = value;
-              print(todoItem);
-            },
-          ),
-          FlatButton(
+          // TextField(
+          //   onChanged: (value) {
+          //     todoItem = value;
+          //     print(todoItem);
+          //   },
+          // ),
+          // FlatButton(
+          //   onPressed: () {
+          //     print('flat button is pressed!!!');
+          //     firebaseHelper.addTodoItems(todoItem: todoItem);
+          //   },
+          //   child: Text('send'),
+          //   color: Colors.blueGrey,
+          //   height: 50,
+          // ),
+          RaisedButton(
+            child: Text('Register Task'),
             onPressed: () {
-              print('button is pressed!!!');
-              firebaseHelper.addTodoItems(todoItem: todoItem);
+              print('popup is launched...');
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialogWithField(
+                    loggedInUser: loggedInUser,
+                  );
+                },
+              );
             },
-            child: Text('send'),
-            color: Colors.blueGrey,
-            height: 50,
           ),
+          // PopupDialog(),
           SizedBox(
             height: 30.0,
           ),
-          Text('================='),
-          PopupDialog(),
           Text('================='),
           StreamBuilder(
             stream: _firestore.collection('stepTodos').snapshots(),
@@ -94,24 +107,6 @@ class _MainTimeLineScreenState extends State<MainTimeLineScreen> {
           firebaseHelper.getTodoItems();
         },
       ),
-      // bottomNavigationBar: BottomNavigationBar(
-      //   items: const <BottomNavigationBarItem>[
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.home),
-      //       title: Text('Home'),
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.settings),
-      //       title: Text('Setting'),
-      //     ),
-      //     BottomNavigationBarItem(
-      //       icon: Icon(Icons.search),
-      //       title: Text('Search'),
-      //     ),
-      //   ],
-      //   // currentIndex: _selectedIndex,
-      //   onTap: null,
-      // ),
     );
   }
 }
