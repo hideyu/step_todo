@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:step_todo/components/todo_item_tile.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:step_todo/components/popup_dialog.dart';
+import 'package:step_todo/functions/firebase_helper.dart';
+import 'package:rflutter_alert/rflutter_alert.dart';
 
 class MainTimeLineScreen extends StatefulWidget {
   static String id = 'main_timeline_screen';
@@ -11,41 +13,17 @@ class MainTimeLineScreen extends StatefulWidget {
 
 class _MainTimeLineScreenState extends State<MainTimeLineScreen> {
   // 1. Firebase authインスタンスを生成
-  final _auth = FirebaseAuth.instance;
-  final _firestore = FirebaseFirestore
-      .instance; // latest versionではFirestore -> FirebaseFirestoreに変更になってる
-  User loggedInUser; // latest versionではFirebaseUser -> Userに変更になってる
+  FirebaseHelper firebaseHelper = FirebaseHelper();
+  // Stream todoItemSnapshot = FirebaseHelper().getTodoItemSnapshot();
+  // final _auth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
   String todoItem;
+  User loggedInUser;
 
   @override
   void initState() {
     super.initState();
-    getCurrentUser();
-  }
-
-  // 2. Userがsign in しているかどうかを確認する処理
-  void getCurrentUser() {
-    try {
-      final user = _auth.currentUser; // latest versionではメソッドじゃなくてプロパティになった
-      // final user = await _auth.currentUser();
-      if (user != null) {
-        loggedInUser = user;
-        print(loggedInUser);
-      }
-    } catch (e) {
-      print(e);
-    }
-  }
-
-  // Firestoreのデータを取得する処理(Udemyと書き方が変わっているので注意)
-  void getTodoItems() async {
-    final todoItems = await _firestore
-        .collection('stepTodos')
-        .get(); // todoItemsにはFuture<Querysnapshot>が入る
-    for (var todoItem in todoItems.docs) {
-      // todoItems.docsにはDocumentSnapshotのListが格納されている
-      print(todoItem.data()); // message.data()で各データにアクセスできる
-    }
+    loggedInUser = firebaseHelper.getCurrentUser();
   }
 
   @override
@@ -58,17 +36,47 @@ class _MainTimeLineScreenState extends State<MainTimeLineScreen> {
       body: ListView(
         children: [
           Text('${loggedInUser.email}でログインしています'),
+          TextField(
+            onChanged: (value) {
+              todoItem = value;
+              print(todoItem);
+            },
+          ),
+          FlatButton(
+            onPressed: () {
+              print('button is pressed!!!');
+              firebaseHelper.addTodoItems(todoItem: todoItem);
+            },
+            child: Text('send'),
+            color: Colors.blueGrey,
+            height: 50,
+          ),
+          SizedBox(
+            height: 30.0,
+          ),
+          Text('================='),
+          PopupDialog(),
+          Text('================='),
           StreamBuilder(
             stream: _firestore.collection('stepTodos').snapshots(),
+            // stream: todoItemSnapshot,
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 final todoItems = snapshot.data.docs;
 
                 List<Text> todoListWidgets = [];
+                // TODO: loggedinUserのdataだけ取得する
+                // TODO: リファクターが必要
                 for (var todoItem in todoItems) {
-                  final todoItemText = todoItem.data()['item'];
+                  final todoItemText = todoItem.data()['title'];
+                  final todoTargetLevel = todoItem.data()['targetLevel'];
+                  final todoDifficlutyScore =
+                      todoItem.data()['difficultyScore'];
+                  final todoIsDone = todoItem.data()['isDone'];
+                  final todoTargetDate = todoItem.data()['targetDate'].toDate();
 
-                  final todoItemWidget = Text('$todoItemText by xxx');
+                  final todoItemWidget = Text(
+                      'todo: $todoItemText, lev: $todoTargetLevel, score: $todoDifficlutyScore, isDone: $todoIsDone, date: $todoTargetDate');
                   todoListWidgets.add(todoItemWidget);
                 }
                 return Column(
@@ -83,7 +91,7 @@ class _MainTimeLineScreenState extends State<MainTimeLineScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          getTodoItems();
+          firebaseHelper.getTodoItems();
         },
       ),
       // bottomNavigationBar: BottomNavigationBar(
