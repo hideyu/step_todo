@@ -3,6 +3,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirebaseDataMap {
+  static const goalTitle = 'goalTitle';
+  static const goalDate = 'goalDate';
+  static const goalIsDone = 'goalIsDone';
+  static const goalUser = 'goalUser';
   static const title = 'title';
   static const targetLevel = 'targetLevel';
   static const difficultyScore = 'difficultyScore';
@@ -40,25 +44,32 @@ class FirebaseHelper {
   }
 
   // 3. Firestoreのデータ（Future）を取得する処理
-  dynamic getTodoItems() async {
-    final todoItems = await _firestore
-        .collection('stepTodos')
+  dynamic getCollections(collection) async {
+    final itemCollection = await _firestore
+        .collection(collection)
         .get(); // todoItemsにはFuture<Querysnapshot>が入る
-    for (var todoItem in todoItems.docs) {
-      // todoItems.docsにはDocumentSnapshotのListが格納されている
-      print(todoItem.data()); // todoitem.data()で各データにアクセスできる
-    }
-    return todoItems;
+    // for (var item in itemCollection.docs) {
+    //   // todoItems.docsにはDocumentSnapshotのListが格納されている
+    //   print(item.data()); // todoitem.data()で各データにアクセスできる
+    // }
+    print(itemCollection.docs.length);
+    return itemCollection;
   }
 
-  // 4. Firestoreにデータを登録する処理
-  void addTodoItems(
-      {String todoItem,
-      DateTime todoDate,
-      int targetLevel,
-      User loggedInUser}) async {
-    // DateTime createdAt = DateTime(2021, 2, 13, 14, 10);
+  Future<int> getCollectionLength(collection) async {
+    final itemCollection = await _firestore
+        .collection(collection)
+        .get(); // todoItemsにはFuture<Querysnapshot>が入る
+    return itemCollection.docs.length;
+  }
 
+  // 4. Firestoreにデータ（stepTodos）を登録する処理
+  void addTodoItems({
+    String todoItem,
+    DateTime todoDate,
+    int targetLevel,
+    User loggedInUser,
+  }) async {
     print('addTodoItems is called');
     print('loggedInUser is $loggedInUser');
     _firestore.collection('stepTodos').add(
@@ -69,6 +80,24 @@ class FirebaseHelper {
         FirebaseDataMap.targetDate: Timestamp.fromDate(todoDate),
         FirebaseDataMap.isDone: false,
         FirebaseDataMap.user: loggedInUser.email,
+      },
+    );
+  }
+
+  // 5. Firestoreにデータ（goals）を登録する処理
+  void addGoalItems({
+    String goalItem,
+    DateTime goalDate,
+    User loggedInUser,
+  }) async {
+    print('addGoalItems is called');
+    print('loggedInUser is $loggedInUser');
+    _firestore.collection('goals').add(
+      {
+        FirebaseDataMap.goalTitle: goalItem,
+        FirebaseDataMap.goalDate: Timestamp.fromDate(goalDate),
+        FirebaseDataMap.goalIsDone: false,
+        FirebaseDataMap.goalUser: loggedInUser.email,
       },
     );
   }
